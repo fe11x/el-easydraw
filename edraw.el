@@ -140,13 +140,13 @@ rectangles. The color must be such that text or lines of the
      (fill . "none")
      (stroke . ,edraw-package-default-stroke)
      (stroke-width . 2)
-     ;;(marker-end . "arrow")
+     (marker-end . "arrow")
      )
     (text
      (fill . ,edraw-package-default-stroke) ;; Not edraw-package-default-fill
      (font-size . 16)
      (font-family . "sans-serif")
-     (text-anchor . "middle"))
+     (text-anchor . "left"))
     (image))
   "Default shape properties provided by the package.
 
@@ -320,7 +320,7 @@ uses the value of `image-scaling-factor' variable."
   :group 'edraw-editor
   :type 'number)
 
-(defcustom edraw-editor-default-grid-visible t
+(defcustom edraw-editor-default-grid-visible nil
   "non-nil means grid lines are displayed by default."
   :group 'edraw-editor
   :type 'boolean)

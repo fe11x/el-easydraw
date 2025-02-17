@@ -11924,6 +11924,21 @@ Deselect all shapes, then select the shapes contained in OBJ."
                       ;; Keep file's top-level comments
                       nil))))
 
+(defun edraw-open ()
+  (interactive)
+  (let ((path (read-file-name "svga: " "~/Notes/imgs/" nil nil nil)))
+    (edraw-edit-svg (when (file-exists-p path)
+                        (edraw-svg-read-from-file path t))
+                      'edraw-svg
+                      nil nil
+                      (lambda (_ok _svg)
+                        (message "quit edraw-jump"))
+                      (lambda (svg)
+                        (edraw-svg-write-to-file svg path nil)
+                        t)
+                      ;; Keep file's top-level comments
+                      nil)))
+
 (cl-defmethod edraw-ungroup-interactive ((obj edraw-multiple-shapes))
   (let* ((groups (seq-filter #'edraw-shape-group-p (oref obj shapes)))
          (apply-transform-p

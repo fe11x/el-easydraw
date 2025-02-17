@@ -2324,7 +2324,8 @@ other purposes."
     (stroke-dasharray attr string nil)
     (stroke-dashoffset attr length nil)
     (style attr string nil)
-    (transform attr string (geometry))))
+    (transform attr string (geometry))
+    (link attr string nil)))
 
 (defconst edraw-svg-element-properties-path-common
   ;; (edraw-svg-prop-info

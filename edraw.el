@@ -569,6 +569,7 @@ Note: All pixel counts are before applying the editor-wide scaling factor."
     (define-key km (kbd "C-t") 'edraw-editor-transform-selected-interactive)
     (define-key km "g" 'edraw-editor-group-selected-shapes)
     (define-key km "G" 'edraw-editor-ungroup-selected-shapes)
+    (define-key km "j" 'edraw-editor-jump-selected-link)
     (define-key km "pf" '("Fill" . edraw-editor-edit-fill-selected))
     (define-key km "ps" '("Stroke" . edraw-editor-edit-stroke-selected))
     (define-key km "pp" '("Properties..." . edraw-editor-edit-properties-of-selected-shapes))
@@ -3578,6 +3579,8 @@ document size or view box."
 (edraw-editor-defcmd edraw-ungroup-selected-shapes ((editor edraw-editor))
   (edraw-ungroup-interactive (edraw-selected-multiple-shapes editor)))
 
+(edraw-editor-defcmd edraw-jump-selected-link ((editor edraw-editor))
+  (edraw-jump (edraw-selected-multiple-shapes editor)))
 
 (edraw-editor-defcmd edraw-combine-selected-paths ((editor edraw-editor))
   (edraw-combine-paths (edraw-selected-multiple-shapes editor)))
@@ -7886,6 +7889,9 @@ match all selected shapes in the editor."
         :cmd-for-selected edraw-editor-ungroup-selected-shapes
         :enable ,(and multiple-p
                       (edraw-group-p shape)))
+       ;; Jump link
+       ((edraw-msg "Jump Link") edraw-jump
+        :cmd-for-selected edraw-editor-jump-selected-link)
        ;; Navigate
        ((edraw-msg "Select Next Above") edraw-select-next-shape
         :cmd-for-selected edraw-editor-select-next-shape
@@ -11902,6 +11908,21 @@ Deselect all shapes, then select the shapes contained in OBJ."
     (dolist (shape (oref obj shapes))
       (when (edraw-shape-group-p shape)
         (edraw-ungroup shape apply-transform-p)))))
+
+(cl-defmethod edraw-jump ((obj edraw-multiple-shapes))
+  (dolist (shape (oref obj shapes))
+    (let ((path (edraw-get-property shape 'link)))
+      (edraw-edit-svg (when (file-exists-p path)
+                        (edraw-svg-read-from-file path t))
+                      'edraw-svg
+                      nil nil
+                      (lambda (_ok _svg)
+                        (message "quit edraw-jump"))
+                      (lambda (svg)
+                        (edraw-svg-write-to-file svg path nil)
+                        t)
+                      ;; Keep file's top-level comments
+                      nil))))
 
 (cl-defmethod edraw-ungroup-interactive ((obj edraw-multiple-shapes))
   (let* ((groups (seq-filter #'edraw-shape-group-p (oref obj shapes)))

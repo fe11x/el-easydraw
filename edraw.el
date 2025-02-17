@@ -11912,6 +11912,8 @@ Deselect all shapes, then select the shapes contained in OBJ."
 (cl-defmethod edraw-jump ((obj edraw-multiple-shapes))
   (dolist (shape (oref obj shapes))
     (let ((path (edraw-get-property shape 'link)))
+      (if (string= path (file-name-nondirectory path))
+          (setf path (expand-file-name path "~/Notes/imgs/")))
       (edraw-edit-svg (when (file-exists-p path)
                         (edraw-svg-read-from-file path t))
                       'edraw-svg
@@ -11922,7 +11924,7 @@ Deselect all shapes, then select the shapes contained in OBJ."
                         (edraw-svg-write-to-file svg path nil)
                         t)
                       ;; Keep file's top-level comments
-                      nil))))
+                      nil t))))
 
 (defun edraw-open ()
   (interactive)
@@ -11932,12 +11934,12 @@ Deselect all shapes, then select the shapes contained in OBJ."
                       'edraw-svg
                       nil nil
                       (lambda (_ok _svg)
-                        (message "quit edraw-jump"))
+                        (message "quit edraw-open"))
                       (lambda (svg)
                         (edraw-svg-write-to-file svg path nil)
                         t)
                       ;; Keep file's top-level comments
-                      nil)))
+                      nil t)))
 
 (cl-defmethod edraw-ungroup-interactive ((obj edraw-multiple-shapes))
   (let* ((groups (seq-filter #'edraw-shape-group-p (oref obj shapes)))
@@ -13181,7 +13183,7 @@ This function is for registering with the `kill-buffer-query-functions' hook."
 (defun edraw-edit-svg (source
                        _source-type
                        &optional ov-beg ov-end on-finish writer
-                       accepts-top-level-comments-p)
+                       accepts-top-level-comments-p keep-window-p)
   ;; @todo Convert SOURCE to SVG tree by SOURCE-TYPE
   ;; SOURCE-TYPE : SOURCE => SVG
   ;; edraw-svg : (svg .... (g id="edraw-body" ...)) => no conv
@@ -13196,7 +13198,9 @@ This function is for registering with the `kill-buffer-query-functions' hook."
           (unless (and ov-beg ov-end)
             (prog1
                 ;; [Change current buffer!!]
-                (pop-to-buffer (generate-new-buffer "*Easy Draw Shape Editor*"))
+                (if keep-window-p
+                    (switch-to-buffer (generate-new-buffer "*Easy Draw Shape Editor*"))
+                  (pop-to-buffer (generate-new-buffer "*Easy Draw Shape Editor*")))
               (with-silent-modifications
                 (insert " "))
               (goto-char (point-min))
